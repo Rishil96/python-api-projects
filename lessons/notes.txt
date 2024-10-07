@@ -1,0 +1,4 @@
+SMTP: Simple Mail Transfer Protocol
+STMP contains all the rules on how emails are sent around the internet.
+
+To use Gmail with Python, we need to turn on 2 step verification and set an App password and use that in our program
