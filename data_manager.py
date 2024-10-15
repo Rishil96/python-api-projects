@@ -20,3 +20,16 @@ class DataManager:
         response.raise_for_status()
         flight_data = response.json()
         return flight_data.get("prices")
+
+    def update_airport_code(self, row_id: int, row_data: dict) -> dict:
+        """
+        This method makes a put request to update a mentioned row with data
+        """
+        update_row_url = self.FLIGHT_API_ENDPOINT + f"/{row_id}"
+        payload = {
+            "price": row_data
+        }
+
+        response = requests.put(url=update_row_url, json=payload, headers=self.headers)
+        response.raise_for_status()
+        return response.json()
