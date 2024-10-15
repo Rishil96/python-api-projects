@@ -48,7 +48,7 @@ class FlightSearch:
         return response.json()
 
     def get_flights(self, origin_city_iata_code: str, destination_city_iata_code: str, time_range_in_days: int,
-                    adults: int) -> dict:
+                    adults: int, currency_code: str) -> dict:
         """
         This method returns the list of flights available between the next 6 months from origin to destination
         """
@@ -65,7 +65,8 @@ class FlightSearch:
             "destinationLocationCode": destination_city_iata_code,
             "departureDate": from_date,
             "returnDate": to_date,
-            "adults": adults
+            "adults": adults,
+            "currencyCode": currency_code,
         }
 
         response = requests.get(url=self.FLIGHT_OFFERS_ENDPOINT, params=parameters, headers=self.headers)
