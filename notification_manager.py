@@ -16,17 +16,16 @@ class NotificationManager:
         This method sends a notification to the user if any flight is available at a cheaper cost than previously
         decided
         """
-        flight_price = flight.get("price", {}).get("grandTotal", 100000000)
+        flight_price = float(flight.get("price", {}).get("grandTotal", 100000000))
         airline = flight.get("airline") if flight.get("airline") != "N/A" else flight.get("airlineCode")
 
+        flight_details = f"""Low Price Alert!
+Only ₹{flight_price} to travel from {source} to {destination} via {airline}.
+Hurry up and book the tickets now!
+        """
+        print(flight_details)
+
         if flight_price <= price_limit:
-            flight_details = f"""
-            Low Price Alert!
-            Only ₹{flight_price} to travel from {source} to {destination} via {airline}.
-            Hurry up and book the tickets now!
-            
-            """
-            print(flight_details)
             client = Client(self.twilio_account_sid, self.twilio_auth_token)
             message = client.messages.create(
                 body=flight_details,

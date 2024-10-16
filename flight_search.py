@@ -18,7 +18,7 @@ class FlightSearch:
             "Authorization": f"Bearer {self._token["access_token"]}"
         }
 
-    def get_airport_code(self, city_name) -> str:
+    def get_airport_code(self, city_name) -> dict:
         """
         This method returns an IATA code for a given input city
         """
