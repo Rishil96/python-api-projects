@@ -24,7 +24,7 @@ class FlightData:
                 "ticketDate": flight.get("lastTicketingDate", "N/A"),
                 "remainingSeats": flight.get("numberOfBookableSeats", 0),
                 "price": flight.get("price", {}),
-                "airlineCodes": airline_code,
+                "airlineCode": airline_code,
                 "airline": self.flight_carriers.get(airline_code, "N/A")
 
             }
