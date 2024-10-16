@@ -31,3 +31,18 @@ class FlightData:
             formatted_flight_list.append(current_flight_info)
 
         return formatted_flight_list
+
+    def find_cheapest_flight(self) -> dict:
+        """
+        This method finds the cheapest flight from all the available flights
+        """
+        formatted_flight_list = self.format_flight_data()
+        result_flight = formatted_flight_list[0]
+
+        for flight in formatted_flight_list:
+            cheapest_flight = float(result_flight.get("price").get("grandTotal"))
+            current_flight = float(flight.get("price").get("grandTotal"))
+            if cheapest_flight > current_flight:
+                result_flight = flight
+
+        return result_flight
