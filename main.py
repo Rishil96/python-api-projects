@@ -24,7 +24,7 @@ for row in sheet_data:
     if row["iataCode"] == "":
         row["iataCode"] = flight_search.get_destination_code(row["city"])
         # slowing down requests to avoid rate limit
-        time.sleep(2)
+        time.sleep(5)
 print(f"sheet_data:\n {sheet_data}")
 
 data_manager.destination_data = sheet_data
@@ -45,13 +45,40 @@ for destination in sheet_data:
     )
     cheapest_flight = find_cheapest_flight(flights)
     print(f"{destination['city']}: ₹{cheapest_flight.price}")
-    # Slowing down requests to avoid rate limit
-    time.sleep(2)
+    # slowing down requests to avoid rate limit
+    time.sleep(5)
 
+    # Send Email to all the users
     if cheapest_flight.price != "N/A" and cheapest_flight.price < destination["lowestPrice"]:
         print(f"Lower price flight found to {destination['city']}!")
+
+        # Customise the message depending on the number of stops
+        if cheapest_flight.stops == 0:
+            message = f"Low price alert! Only INR {cheapest_flight.price} to fly direct " \
+                      f"from {cheapest_flight.origin_airport} to {cheapest_flight.destination_airport}, " \
+                      f"on {cheapest_flight.out_date} until {cheapest_flight.return_date}."
+        else:
+            message = f"Low price alert! Only INR {cheapest_flight.price} to fly " \
+                      f"from {cheapest_flight.origin_airport} to {cheapest_flight.destination_airport}, " \
+                      f"with {cheapest_flight.stops} stop(s) " \
+                      f"departing on {cheapest_flight.out_date} and returning on {cheapest_flight.return_date}."
+
+        # Send whatsapp notification to main user
         notification_manager.send_whatsapp(
             message_body=f"Low price alert! Only ₹{cheapest_flight.price} to fly "
                          f"from {cheapest_flight.origin_airport} to {cheapest_flight.destination_airport}, "
                          f"on {cheapest_flight.out_date} until {cheapest_flight.return_date}."
         )
+
+        # Save all email ID in a list to send emails in one go
+        customer_email_list = []
+        customer_data = data_manager.get_customer_data()
+
+        for row in customer_data["users"]:
+            email = row["whatIsYourEmailId?"]
+            customer_email_list.append(email)
+
+        # Send emails to everyone on the list of users
+        notification_manager.send_emails(email_list=customer_email_list,
+                                         email_body=message,
+                                         destination_city=destination['city'].title())
