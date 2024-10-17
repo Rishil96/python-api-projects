@@ -105,7 +105,7 @@ class FlightSearch:
 
         return code
 
-    def check_flights(self, origin_city_code, destination_city_code, from_time, to_time):
+    def check_flights(self, origin_city_code, destination_city_code, from_time, to_time, is_direct=True):
         """
         Searches for flight options between two cities on specified departure and return dates
         using the Amadeus API.
@@ -115,6 +115,7 @@ class FlightSearch:
             destination_city_code (str): The IATA code of the destination city.
             from_time (datetime): The departure date.
             to_time (datetime): The return date.
+            is_direct (bool): Search for a direct or indirect flight based on true/false
 
         Returns:
             dict or None: A dictionary containing flight offer data if the query is successful; None
@@ -134,7 +135,7 @@ class FlightSearch:
             "departureDate": from_time.strftime("%Y-%m-%d"),
             "returnDate": to_time.strftime("%Y-%m-%d"),
             "adults": 1,
-            "nonStop": "true",
+            "nonStop": "true" if is_direct else "false",
             "currencyCode": "INR",
             "max": "10",
         }
@@ -145,6 +146,20 @@ class FlightSearch:
             params=query,
         )
 
+        # Save the response and get the total count of flights we retrieved from it
+        flight_response = response.json()
+        try:
+            flight_count = flight_response["meta"]["count"]
+        except KeyError as e:
+            print("Key Error for Flight response:", e)
+            flight_count = 0
+
+        # Code to recursively call the function if no direct flight was found for the given city
+        if flight_count == 0 and is_direct:
+            print(f"No direct flights found for {destination_city_code} from {origin_city_code}.")
+            print("Searching for indirect flights.")
+            return self.check_flights(origin_city_code, destination_city_code, from_time, to_time, False)
+
         if response.status_code != 200:
             print(f"check_flights() response code: {response.status_code}")
             print("There was a problem with the flight search.\n"
@@ -154,4 +169,4 @@ class FlightSearch:
             print("Response body:", response.text)
             return None
 
-        return response.json()
+        return flight_response
