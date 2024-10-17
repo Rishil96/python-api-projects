@@ -1,4 +1,6 @@
 import os
+import smtplib
+
 from twilio.rest import Client
 
 
@@ -7,6 +9,8 @@ class NotificationManager:
 
     def __init__(self):
         self.client = Client(os.environ['TWILIO_ACCOUNT_SID'], os.environ["TWILIO_AUTH_TOKEN"])
+        self.user_email = os.environ.get("USER_EMAIL_ID")
+        self.user_password = os.environ.get("USER_EMAIL_PASSWORD")
 
     def send_sms(self, message_body):
         """
@@ -47,3 +51,16 @@ class NotificationManager:
             to=os.environ["MY_PHONE_NUMBER"]
         )
         print(message.sid)
+
+    def send_emails(self, email_list: list, email_body: str, destination_city: str):
+        """
+        This method sends the email body as email to all the email IDs in the email_list
+        """
+        with smtplib.SMTP("smtp.gmail.com") as connection:
+            connection.starttls()
+            connection.login(user=self.user_email, password=self.user_password)
+            for email in email_list:
+                connection.sendmail(from_addr=self.user_email,
+                                    to_addrs=email,
+                                    msg=f"Subject:Flight Discount for {destination_city}!!!\n\n{email_body}")
+                print(f"Email sent to {email} successfully")
