@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 SHEET_PRICES_ENDPOINT = "https://api.sheety.co/d1d6eaca05258647c2e89ceecab654ce/flightDeals/prices"
+SHEET_USERS_ENDPOINT = "https://api.sheety.co/d1d6eaca05258647c2e89ceecab654ce/flightDeals/users"
 
 
 class DataManager:
@@ -18,7 +19,7 @@ class DataManager:
         self.destination_data = {}
 
     def get_destination_data(self):
-        # Use the Google Sheets API to GET all the data in that sheet and print it out.
+        # Use the Google Sheets API to GET all the data in prices sheet and print it out.
         response = requests.get(url=SHEET_PRICES_ENDPOINT, headers=self._authorization_header)
         data = response.json()
         self.destination_data = data["prices"]
@@ -41,3 +42,11 @@ class DataManager:
                 headers=self._authorization_header
             )
             print(response.text)
+
+    def get_customer_data(self):
+        # Use the Google Sheets API to GET all the data in users sheet and print it out.
+        response = requests.get(url=SHEET_USERS_ENDPOINT, headers=self._authorization_header)
+        data = response.json()
+        # Try importing pretty print and printing the data out again using pprint() to see it formatted.
+        pprint(data)
+        return data
