@@ -1,7 +1,7 @@
 
 class FlightData:
 
-    def __init__(self, price, origin_airport, destination_airport, out_date, return_date):
+    def __init__(self, price, origin_airport, destination_airport, out_date, return_date, stops):
         """
         Constructor for initializing a new flight data instance with specific travel details.
 
@@ -17,6 +17,7 @@ class FlightData:
         self.destination_airport = destination_airport
         self.out_date = out_date
         self.return_date = return_date
+        self.stops = stops
 
 
 def find_cheapest_flight(data) -> FlightData:
@@ -41,18 +42,31 @@ def find_cheapest_flight(data) -> FlightData:
     # Handle empty data if no flight or Amadeus rate limit exceeded
     if data is None or not data['data']:
         print("No flight data")
-        return FlightData("N/A", "N/A", "N/A", "N/A", "N/A")
+        return FlightData("N/A", "N/A", "N/A", "N/A", "N/A", "N/A")
 
     # Data from the first flight in the json
     first_flight = data['data'][0]
     lowest_price = float(first_flight["price"]["grandTotal"])
-    origin = first_flight["itineraries"][0]["segments"][0]["departure"]["iataCode"]
-    destination = first_flight["itineraries"][0]["segments"][0]["arrival"]["iataCode"]
-    out_date = first_flight["itineraries"][0]["segments"][0]["departure"]["at"].split("T")[0]
-    return_date = first_flight["itineraries"][1]["segments"][0]["departure"]["at"].split("T")[0]
+    itineraries = first_flight["itineraries"]
+
+    origin = itineraries[0]["segments"][0]["departure"]["iataCode"]
+    out_date = itineraries[0]["segments"][0]["departure"]["at"].split("T")[0]
+
+    destination = itineraries[0]["segments"][-1]["arrival"]["iataCode"]
+    return_date = itineraries[-1]["segments"][0]["departure"]["at"].split("T")[0]
+
+    total_stops = 0
+
+    for itinerary in itineraries:
+        # Calculate the number of stops in this itinerary
+        # Number of stops = number of segments - 1
+        stops_in_itinerary = len(itinerary['segments']) - 1
+
+        # Add to total stops
+        total_stops += stops_in_itinerary
 
     # Initialize FlightData with the first flight for comparison
-    cheapest_flight = FlightData(lowest_price, origin, destination, out_date, return_date)
+    cheapest_flight = FlightData(lowest_price, origin, destination, out_date, return_date, total_stops)
 
     for flight in data["data"]:
         price = float(flight["price"]["grandTotal"])
@@ -62,7 +76,7 @@ def find_cheapest_flight(data) -> FlightData:
             destination = flight["itineraries"][0]["segments"][0]["arrival"]["iataCode"]
             out_date = flight["itineraries"][0]["segments"][0]["departure"]["at"].split("T")[0]
             return_date = flight["itineraries"][1]["segments"][0]["departure"]["at"].split("T")[0]
-            cheapest_flight = FlightData(lowest_price, origin, destination, out_date, return_date)
-            print(f"Lowest price to {destination} is £{lowest_price}")
+            cheapest_flight = FlightData(lowest_price, origin, destination, out_date, return_date, total_stops)
+            print(f"Lowest price to {destination} is ₹{lowest_price}")
 
     return cheapest_flight
